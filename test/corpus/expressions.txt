@@ -1,0 +1,162 @@
+================================================================================
+Member access and qualified calls
+================================================================================
+
+let separator = helpers::separator
+rule list { helpers::sep1(item, separator) }
+let property = settings.name
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (qualified_access_expression
+      (identifier)
+      (identifier)))
+  (rule_definition
+    (identifier)
+    (block
+      (qualified_call_expression
+        (identifier)
+        (identifier)
+        (argument_list
+          (identifier)
+          (identifier)))))
+  (let_binding
+    (identifier)
+    (field_access_expression
+      (identifier)
+      (identifier))))
+
+================================================================================
+Nested qualified access
+================================================================================
+
+let delimiter = helpers::nested::delimiter
+rule item { helpers::nested::wrap(value) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (qualified_access_expression
+      (qualified_access_expression
+        (identifier)
+        (identifier))
+      (identifier)))
+  (rule_definition
+    (identifier)
+    (block
+      (qualified_call_expression
+        (qualified_access_expression
+          (identifier)
+          (identifier))
+        (identifier)
+        (argument_list
+          (identifier))))))
+
+================================================================================
+Macro calls
+================================================================================
+
+let empty = make()
+let values = make(one, two,)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list)))
+  (let_binding
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (identifier)
+        (identifier)))))
+
+================================================================================
+List append and inherited configuration
+================================================================================
+
+let extras = append(grammar_config(base, extras), [comment])
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (call_expression
+          (identifier)
+          (argument_list
+            (identifier)
+            (identifier)))
+        (list_expression
+          (identifier))))))
+
+================================================================================
+Single-binding for expressions
+================================================================================
+
+rule keyword {
+    choice(for (word: str_t) in keywords { word })
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (for_expression
+            (for_binding
+              (identifier)
+              (primitive_type))
+            (identifier)
+            (block
+              (identifier))))))))
+
+================================================================================
+Destructuring for expressions
+================================================================================
+
+rule operator {
+    choice(for (op: str_t, precedence: int_t) in operators {
+        prec_left(precedence, op)
+    })
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (for_expression
+            (for_binding
+              (identifier)
+              (primitive_type))
+            (for_binding
+              (identifier)
+              (primitive_type))
+            (identifier)
+            (block
+              (call_expression
+                (identifier)
+                (argument_list
+                  (identifier)
+                  (identifier))))))))))

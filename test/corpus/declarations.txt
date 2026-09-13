@@ -1,0 +1,56 @@
+================================================================================
+Grammar block
+================================================================================
+
+grammar {
+    language: "example",
+    start: source_file,
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (string_literal))
+      (grammar_field
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Rules
+================================================================================
+
+rule source_file { expression }
+override rule expression { identifier }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (identifier)))
+  (rule_definition
+    (identifier)
+    (block
+      (identifier))))
+
+================================================================================
+Bindings and forward declarations
+================================================================================
+
+let separator: str_t = ","
+expect indent
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (string_literal))
+  (expect_declaration
+    (identifier)))

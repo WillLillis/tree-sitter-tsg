@@ -1,0 +1,45 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "tsg",
+      "camelcase": "TSG",
+      "title": "TSG",
+      "scope": "source.tsg",
+      "file-types": [
+        "tsg"
+      ],
+      "injection-regex": "^tsg$",
+      "class-name": "TreeSitterTSG",
+      "highlights": "queries/highlights.scm",
+      "injections": "queries/injections.scm",
+      "tags": "queries/tags.scm"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "A tree-sitter grammar for TSG, tree-sitter's native grammar DSL",
+    "authors": [
+      {
+        "name": "Will Lillis",
+        "email": "will.lillis24@gmail.com",
+        "url": "https://github.com/WillLillis"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/WillLillis/tree-sitter-tsg",
+      "funding": ""
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": false,
+    "java": false,
+    "node": false,
+    "python": false,
+    "rust": true,
+    "swift": false,
+    "zig": false
+  }
+}

@@ -1,0 +1,60 @@
+================================================================================
+Lists
+================================================================================
+
+let empty = []
+let values = [one, two,]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (list_expression))
+  (let_binding
+    (identifier)
+    (list_expression
+      (identifier)
+      (identifier))))
+
+================================================================================
+Tuples
+================================================================================
+
+let empty = ()
+let pair = ("name", 1,)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (tuple_expression))
+  (let_binding
+    (identifier)
+    (tuple_expression
+      (string_literal)
+      (integer_literal))))
+
+================================================================================
+Objects
+================================================================================
+
+let empty = {}
+let properties = { name: "value", count: 1, }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (object_expression))
+  (let_binding
+    (identifier)
+    (object_expression
+      (object_field
+        (identifier)
+        (string_literal))
+      (object_field
+        (identifier)
+        (integer_literal)))))

@@ -1,0 +1,75 @@
+================================================================================
+Scalar types
+================================================================================
+
+let rule_value: rule_t = item
+let string_value: str_t = "value"
+let integer_value: int_t = 1
+let base: grammar_t = inherit("base/grammar.tsg")
+let helpers: library_t = import("helpers.tsg")
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (identifier))
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (string_literal))
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (integer_literal))
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (call_expression
+      (identifier)
+      (argument_list
+        (string_literal))))
+  (let_binding
+    (identifier)
+    (primitive_type)
+    (call_expression
+      (identifier)
+      (argument_list
+        (string_literal)))))
+
+================================================================================
+Collection types
+================================================================================
+
+let rules: list_t<rule_t> = []
+let properties: obj_t<str_t> = {}
+let pairs: list_t<tuple_t<str_t, int_t>> = []
+let table: obj_t<list_t<str_t>> = {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (generic_type
+      (primitive_type))
+    (list_expression))
+  (let_binding
+    (identifier)
+    (generic_type
+      (primitive_type))
+    (object_expression))
+  (let_binding
+    (identifier)
+    (generic_type
+      (generic_type
+        (primitive_type)
+        (primitive_type)))
+    (list_expression))
+  (let_binding
+    (identifier)
+    (generic_type
+      (generic_type
+        (primitive_type)))
+    (object_expression)))

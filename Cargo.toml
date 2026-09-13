@@ -1,0 +1,37 @@
+[package]
+authors      = [ "Will Lillis <will.lillis24@gmail.com>" ]
+autoexamples = false
+categories   = [ "parser-implementations", "parsing", "text-editors" ]
+description  = "A tree-sitter grammar for TSG, tree-sitter's native grammar DSL"
+edition      = "2024"
+keywords     = [ "incremental", "parsing", "tree-sitter", "tsg" ]
+license      = "MIT"
+name         = "tree-sitter-tsg"
+readme       = "README.md"
+repository   = "https://github.com/WillLillis/tree-sitter-tsg"
+version      = "0.1.0"
+
+build   = "bindings/rust/build.rs"
+include = [
+  "/LICENSE",
+  "/README.md",
+  "/bindings/rust/*",
+  "/grammar.tsg",
+  "/queries/*",
+  "/src/*.c",
+  "/src/*.json",
+  "/src/tree_sitter/*.h",
+  "/tree-sitter.json",
+]
+
+[lib]
+path = "bindings/rust/lib.rs"
+
+[dependencies]
+tree-sitter-language = "0.1"
+
+[build-dependencies]
+cc = "1.2"
+
+[dev-dependencies]
+tree-sitter = "0.27.0"

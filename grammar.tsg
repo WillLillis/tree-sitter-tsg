@@ -1,0 +1,277 @@
+// Tree-sitter grammar for TSG, the tree-sitter native DSL (.tsg files)
+//
+// Keyword treatment: the native DSL keywords are *contextual*. The builtin
+// combinators (`seq`, `choice`, `field`, `prec`, `import`, ...) act as keywords
+// only when immediately followed by `(`; otherwise they are ordinary
+// identifiers, so a grammar may name rules after them. We model that by NOT
+// reserving the combinators at all - they are plain identifiers parsed through
+// `call_expression`, and the highlight queries pick them out by name.
+//
+// The *structural* keywords (`grammar`, `rule`, `override`, `let`, `macro`,
+// `rules`, `expect`, `for`, `in`) are real string tokens. Because
+// `word: identifier` is set, tree-sitter's keyword-extraction lets them fall
+// back to `identifier` in any parse state that does not expect the keyword, so
+// `rule macro { ... }`, `rule in { ... }`, etc. still parse. The raw-identifier
+// escape `r#name` is folded into the `identifier` token for the rest.
+
+grammar {
+    language: "tsg",
+    extras: [regexp(r"\s"), comment],
+    externals: [_raw_string_start, raw_string_content, _raw_string_end, _error_sentinel],
+    word: identifier,
+}
+
+macro commaSep1(item: rule_t) rule_t { seq(item, repeat(seq(",", item)), optional(",")) }
+macro commaSep(item: rule_t) rule_t { optional(commaSep1(item)) }
+
+rule source_file { repeat(_item) }
+
+rule _item {
+    choice(
+        grammar_block,
+        rule_definition,
+        let_binding,
+        macro_definition,
+        rule_set_definition,
+        expect_declaration,
+        rule_set_invocation,
+        cfg_item,
+    )
+}
+
+// `#[cfg(NAME)]` gating an item; stacks for multiple attributes.
+rule cfg_item { seq(field(attribute, cfg_attribute), field(item, _item)) }
+
+rule cfg_attribute {
+    seq("#", "[", "cfg", "(", field(name, identifier), ")", "]")
+}
+
+// ----- top-level items -----------------------------------------------------
+
+rule grammar_block {
+    seq("grammar", field(body, grammar_body))
+}
+
+rule grammar_body {
+    seq("{", commaSep(grammar_field), "}")
+}
+
+rule grammar_field {
+    seq(field(key, identifier), ":", field(value, _expression))
+}
+
+rule rule_definition {
+    seq(
+        optional("override"),
+        "rule",
+        field(name, _rule_name),
+        field(body, block),
+    )
+}
+
+// A rule name is a bare identifier, or `@<expr>` for a computed name (only
+// meaningful inside a `rules` macro body, but accepted anywhere for robustness).
+rule _rule_name { choice(identifier, computed_name) }
+
+rule computed_name { seq("@", field(expression, _expression)) }
+
+rule let_binding {
+    seq(
+        "let",
+        field(name, identifier),
+        optional(seq(":", field(type, _type))),
+        "=",
+        field(value, _expression),
+    )
+}
+
+rule macro_definition {
+    seq(
+        "macro",
+        field(name, identifier),
+        field(parameters, parameter_list),
+        field(return_type, _type),
+        field(body, block),
+    )
+}
+
+// `rules NAME(params) { rule-decls }` - a rule-set macro expanded at each
+// top-level `@NAME(args)` call site.
+rule rule_set_definition {
+    seq(
+        "rules",
+        field(name, identifier),
+        field(parameters, parameter_list),
+        field(body, rule_set_body),
+    )
+}
+
+rule rule_set_body {
+    seq("{", repeat(_rule_set_member), "}")
+}
+
+rule _rule_set_member { choice(rule_definition, cfg_rule_set_member) }
+
+rule cfg_rule_set_member {
+    seq(field(attribute, cfg_attribute), field(member, _rule_set_member))
+}
+
+// Forward-declares an externally-provided (scanner) symbol so it can be
+// referenced - e.g. via `mod::name` from an importing grammar.
+rule expect_declaration { seq("expect", field(name, identifier)) }
+
+// Top-level `@NAME(args)` or `@module::NAME(args)` rule-set macro invocation.
+rule rule_set_invocation {
+    seq(
+        "@",
+        choice(
+            field(function, identifier),
+            seq(
+                field(module, identifier),
+                "::",
+                repeat(seq(field(module, identifier), "::")),
+                field(function, identifier),
+            ),
+        ),
+        field(arguments, argument_list),
+    )
+}
+
+rule parameter_list { seq("(", commaSep(parameter), ")") }
+
+rule parameter { seq(field(name, identifier), ":", field(type, _type)) }
+
+rule block { seq("{", field(body, _expression), "}") }
+
+// ----- types ---------------------------------------------------------------
+
+rule _type { choice(primitive_type, generic_type) }
+
+rule primitive_type {
+    choice("rule_t", "str_t", "int_t", "grammar_t", "library_t")
+}
+
+rule generic_type {
+    choice(
+        seq(field(name, "list_t"), "<", field(element, _type), ">"),
+        seq(field(name, "obj_t"), "<", field(element, _type), ">"),
+        seq(field(name, "tuple_t"), "<", commaSep1(field(element, _type)), ">"),
+    )
+}
+
+// ----- expressions ---------------------------------------------------------
+
+rule _expression {
+    choice(
+        identifier,
+        for_reference,
+        string_literal,
+        raw_string_literal,
+        integer_literal,
+        call_expression,
+        qualified_call_expression,
+        field_access_expression,
+        qualified_access_expression,
+        sym_ref,
+        for_expression,
+        list_expression,
+        tuple_expression,
+        object_expression,
+        unary_expression,
+        binary_expression,
+    )
+}
+
+// All call-style expressions - builtins (`seq`, `choice`, `field`, `prec`,
+// `import`, ...) and user macros - share this form. The highlight queries use
+// the function name to distinguish the builtins.
+rule call_expression {
+    prec(1, seq(field(function, identifier), field(arguments, argument_list)))
+}
+
+rule qualified_call_expression {
+    prec_left(3, seq(
+        field(object, _expression),
+        "::",
+        field(function, identifier),
+        field(arguments, argument_list),
+    ))
+}
+
+rule argument_list { seq("(", commaSep(_argument), ")") }
+
+// Call/list elements may carry their own `#[cfg(NAME)]` gate.
+rule _argument { choice(_expression, cfg_expression) }
+
+rule cfg_expression {
+    seq(field(attribute, cfg_attribute), field(expression, _expression))
+}
+
+rule field_access_expression {
+    prec_left(3, seq(field(object, _expression), ".", field(field, identifier)))
+}
+
+rule qualified_access_expression {
+    prec_left(3, seq(field(object, _expression), "::", field(member, identifier)))
+}
+
+// `@<expr>` reference to a (possibly computed-name) rule, inside rule-set bodies.
+rule sym_ref { prec(2, seq("@", field(expression, _expression))) }
+
+rule unary_expression { prec(2, seq("-", field(operand, _expression))) }
+
+rule binary_expression {
+    prec_left(1, seq(
+        field(left, _expression),
+        field(operator, choice("+", "-")),
+        field(right, _expression),
+    ))
+}
+
+rule for_expression {
+    seq(
+        "for", "(", commaSep(for_binding), ")",
+        "in", field(iterable, _expression),
+        field(body, block),
+    )
+}
+
+rule for_binding { seq(field(name, identifier), ":", field(type, _type)) }
+
+// `for` is the only structural keyword that also begins an expression (the
+// for-loop), so keyword-extraction cannot fall it back to an identifier in
+// expression position. A grammar that names a rule `for` (e.g. nim, ruby) and
+// references it bare needs this; the trailing `(` disambiguates the for-loop.
+// Aliased to `identifier` so the highlight queries treat it like any rule ref.
+rule for_reference { alias("for", identifier) }
+
+rule list_expression { seq("[", commaSep(_argument), "]") }
+rule tuple_expression { seq("(", commaSep(_expression), ")") }
+
+rule object_expression { seq("{", commaSep(object_field), "}") }
+rule object_field { seq(field(key, identifier), ":", field(value, _expression)) }
+
+// ----- terminals -----------------------------------------------------------
+
+rule string_literal {
+    token(seq(
+        "\"",
+        repeat(choice(regexp(r#"[^"\\\n]+"#), regexp(r#"\\[^\n]"#))),
+        "\"",
+    ))
+}
+// Raw strings are split by the external scanner (src/scanner.c) into a hidden
+// start/end delimiter and a `raw_string_content` node, so injection queries can
+// target the inner text directly (the closing delimiter width varies with the
+// `#` count, which a query-side offset can't handle).
+rule raw_string_literal {
+    seq(_raw_string_start, raw_string_content, _raw_string_end)
+}
+
+rule integer_literal { regexp("[0-9]+") }
+
+// Bare identifiers and the `r#name` raw-identifier escape. Keyword extraction
+// only matches the bare keyword text, so `r#let` stays an identifier.
+rule identifier { regexp("(?:r#)?[a-zA-Z_][a-zA-Z0-9_]*") }
+
+rule comment { token(seq("//", regexp(r"[^\n]*"))) }

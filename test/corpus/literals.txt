@@ -1,0 +1,75 @@
+================================================================================
+Escaped string literals
+================================================================================
+
+let escaped = "line\nquote\""
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (string_literal)))
+
+================================================================================
+Raw string literals
+================================================================================
+
+let quoted = r#"a "quoted" value"#
+let plain = r"value"
+let empty = r##""##
+let hashes = r###"a "quote" and # hash"###
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (raw_string_literal
+      (raw_string_content)))
+  (let_binding
+    (identifier)
+    (raw_string_literal
+      (raw_string_content)))
+  (let_binding
+    (identifier)
+    (raw_string_literal
+      (raw_string_content)))
+  (let_binding
+    (identifier)
+    (raw_string_literal
+      (raw_string_content))))
+
+================================================================================
+Integer literals and arithmetic
+================================================================================
+
+let precedence = -1 + 2 - 3
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (binary_expression
+      (binary_expression
+        (unary_expression
+          (integer_literal))
+        (integer_literal))
+      (integer_literal))))
+
+================================================================================
+Comments
+================================================================================
+
+// before a declaration
+let value = "text" // after a declaration
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (comment)
+  (let_binding
+    (identifier)
+    (string_literal))
+  (comment))

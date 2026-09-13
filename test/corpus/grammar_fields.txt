@@ -1,0 +1,144 @@
+================================================================================
+Start and word rules
+================================================================================
+
+grammar {
+    language: "example",
+    start: source_file,
+    word: identifier,
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (string_literal))
+      (grammar_field
+        (identifier)
+        (identifier))
+      (grammar_field
+        (identifier)
+        (identifier)))))
+
+================================================================================
+Token-related rule lists
+================================================================================
+
+grammar {
+    extras: [whitespace, comment],
+    externals: [indent, dedent],
+    inline: [_expression],
+    supertypes: [_statement],
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (list_expression
+          (identifier)
+          (identifier)))
+      (grammar_field
+        (identifier)
+        (list_expression
+          (identifier)
+          (identifier)))
+      (grammar_field
+        (identifier)
+        (list_expression
+          (identifier)))
+      (grammar_field
+        (identifier)
+        (list_expression
+          (identifier))))))
+
+================================================================================
+Conflicts and precedences
+================================================================================
+
+grammar {
+    conflicts: [[block, object], [call, member]],
+    precedences: [["member", "call"]],
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (list_expression
+          (list_expression
+            (identifier)
+            (identifier))
+          (list_expression
+            (identifier)
+            (identifier))))
+      (grammar_field
+        (identifier)
+        (list_expression
+          (list_expression
+            (string_literal)
+            (string_literal)))))))
+
+================================================================================
+Reserved words and flags
+================================================================================
+
+grammar {
+    reserved: { default: ["if"], property: ["get", "set"] },
+    flags: { enabled: ["COMMENTS"], disabled: ["LEGACY"] },
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (object_expression
+          (object_field
+            (identifier)
+            (list_expression
+              (string_literal)))
+          (object_field
+            (identifier)
+            (list_expression
+              (string_literal)
+              (string_literal)))))
+      (grammar_field
+        (identifier)
+        (object_expression
+          (object_field
+            (identifier)
+            (list_expression
+              (string_literal)))
+          (object_field
+            (identifier)
+            (list_expression
+              (string_literal))))))))
+
+================================================================================
+Inheritance
+================================================================================
+
+grammar {
+    inherits: base,
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (grammar_block
+    (grammar_body
+      (grammar_field
+        (identifier)
+        (identifier)))))

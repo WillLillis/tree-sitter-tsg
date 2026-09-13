@@ -1,0 +1,90 @@
+================================================================================
+Attributes on declarations
+================================================================================
+
+#[cfg(ONE)] #[cfg(TWO)] let value = "enabled"
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (cfg_item
+    (cfg_attribute
+      (identifier))
+    (cfg_item
+      (cfg_attribute
+        (identifier))
+      (let_binding
+        (identifier)
+        (string_literal)))))
+
+================================================================================
+Attributes on list elements
+================================================================================
+
+let extras = [#[cfg(COMMENTS)] comment]
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (list_expression
+      (cfg_expression
+        (cfg_attribute
+          (identifier))
+        (identifier)))))
+
+================================================================================
+Attributes on calls
+================================================================================
+
+rule item { choice(#[cfg(ONE)] one, #[cfg(TWO)] two) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (cfg_expression
+            (cfg_attribute
+              (identifier))
+            (identifier))
+          (cfg_expression
+            (cfg_attribute
+              (identifier))
+            (identifier)))))))
+
+================================================================================
+Attributes on rule-set members
+================================================================================
+
+rules optional_rule() {
+    #[cfg(ITEM)] rule item { "item" }
+    #[cfg(BASE)] override rule base { "base" }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_set_definition
+    (identifier)
+    (parameter_list)
+    (rule_set_body
+      (cfg_rule_set_member
+        (cfg_attribute
+          (identifier))
+        (rule_definition
+          (identifier)
+          (block
+            (string_literal))))
+      (cfg_rule_set_member
+        (cfg_attribute
+          (identifier))
+        (rule_definition
+          (identifier)
+          (block
+            (string_literal)))))))

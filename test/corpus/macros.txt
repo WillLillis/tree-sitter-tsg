@@ -1,0 +1,112 @@
+================================================================================
+Expression macros
+================================================================================
+
+macro sep1(item: rule_t, separator: str_t) rule_t {
+    seq(item, repeat(seq(separator, item)))
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (macro_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (primitive_type)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier)
+          (call_expression
+            (identifier)
+            (argument_list
+              (call_expression
+                (identifier)
+                (argument_list
+                  (identifier)
+                  (identifier))))))))))
+
+================================================================================
+Rule-set macros
+================================================================================
+
+rules token_pair(name: str_t, token: str_t) {
+    rule @concat(name, "_token") { token }
+    rule @concat(name, "_item") { @concat(name, "_token") }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_set_definition
+    (identifier)
+    (parameter_list
+      (parameter
+        (identifier)
+        (primitive_type))
+      (parameter
+        (identifier)
+        (primitive_type)))
+    (rule_set_body
+      (rule_definition
+        (computed_name
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)
+              (string_literal))))
+        (block
+          (identifier)))
+      (rule_definition
+        (computed_name
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)
+              (string_literal))))
+        (block
+          (sym_ref
+            (call_expression
+              (identifier)
+              (argument_list
+                (identifier)
+                (string_literal)))))))))
+
+================================================================================
+Rule-set macro calls
+================================================================================
+
+@token_pair("word", "w")
+@helpers::nested::make_rules("word")
+@empty()
+@many(one, two,)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_set_invocation
+    (identifier)
+    (argument_list
+      (string_literal)
+      (string_literal)))
+  (rule_set_invocation
+    (identifier)
+    (identifier)
+    (identifier)
+    (argument_list
+      (string_literal)))
+  (rule_set_invocation
+    (identifier)
+    (argument_list))
+  (rule_set_invocation
+    (identifier)
+    (argument_list
+      (identifier)
+      (identifier))))

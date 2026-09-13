@@ -1,0 +1,213 @@
+================================================================================
+Empty rules
+================================================================================
+
+rule empty { choice(blank(), eof()) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (call_expression
+            (identifier)
+            (argument_list))
+          (call_expression
+            (identifier)
+            (argument_list)))))))
+
+================================================================================
+Sequences and alternatives
+================================================================================
+
+rule pair { seq(left, choice(middle, right)) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier)
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)
+              (identifier))))))))
+
+================================================================================
+Repetition
+================================================================================
+
+rule items { seq(repeat(item), repeat1(item), optional(item)) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)))
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)))
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier))))))))
+
+================================================================================
+Tokens and regular expressions
+================================================================================
+
+rule word { token(regexp(r"[a-z]+")) }
+rule immediate { token_immediate("!") }
+rule insensitive { regexp("keyword", "i") }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (call_expression
+            (identifier)
+            (argument_list
+              (raw_string_literal
+                (raw_string_content))))))))
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (string_literal)))))
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (string_literal)
+          (string_literal))))))
+
+================================================================================
+Fields and aliases
+================================================================================
+
+rule pair { field(left, alias(item, value)) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (identifier)
+          (call_expression
+            (identifier)
+            (argument_list
+              (identifier)
+              (identifier))))))))
+
+================================================================================
+Precedence
+================================================================================
+
+rule expression {
+    choice(
+        prec(1, term),
+        prec_left(2, sum),
+        prec_right("assign", assignment),
+        prec_dynamic(-1, conflict),
+    )
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (call_expression
+            (identifier)
+            (argument_list
+              (integer_literal)
+              (identifier)))
+          (call_expression
+            (identifier)
+            (argument_list
+              (integer_literal)
+              (identifier)))
+          (call_expression
+            (identifier)
+            (argument_list
+              (string_literal)
+              (identifier)))
+          (call_expression
+            (identifier)
+            (argument_list
+              (unary_expression
+                (integer_literal))
+              (identifier))))))))
+
+================================================================================
+Reserved words
+================================================================================
+
+rule identifier { reserved("global", regexp("[a-z]+")) }
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (rule_definition
+    (identifier)
+    (block
+      (call_expression
+        (identifier)
+        (argument_list
+          (string_literal)
+          (call_expression
+            (identifier)
+            (argument_list
+              (string_literal))))))))
+
+================================================================================
+String concatenation
+================================================================================
+
+let name = concat("tree-sitter-", language)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (let_binding
+    (identifier)
+    (call_expression
+      (identifier)
+      (argument_list
+        (string_literal)
+        (identifier)))))
